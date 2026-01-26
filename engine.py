@@ -12,16 +12,15 @@ class TerrainEngine:
     periodX: int # Rougher or smoother terrain 
     periodY: int
 
-    seed: int
     dimension: str #2D or 3D
 
+    seed: Optional[int] = None
     octaves: Optional[int] = 1
     water_level: Optional[float] = None
 
-    surface: Optional[object] = field(init = False, default = None)
-
     def generate(self):
 
+        global x_coords, y_coords, noise
         numpy.random.seed(self.seed)
        
         # Generate noise terrain:
@@ -33,27 +32,27 @@ class TerrainEngine:
 
         # Output 2D Terrain
         if self.dimension == "2D":
-            self.surface = plt.imshow(noise, cmap='terrain')
-            # return xy here
+            return noise
             
         # Output 3D Terrain
         elif self.dimension == "3D":
             # Make three dimensional visualization using concentration as height
             x_coords, y_coords = numpy.meshgrid(numpy.arange(self.height), numpy.arange(self.width))
-            fig = plt.figure()
-            ax = fig.add_subplot(111, projection="3d")
-            self.surface = ax.plot_surface(x_coords, y_coords, noise, cmap='terrain', linewidth = 0)
-            # return xyz here
 
         else:
             raise NameError
-        
-        return self.surface
-
-"""     
+    
+    # Axes passed as arguments so it works both as standalone and w/ ui appl.
+    def draw(self, ax, fig):
+        global x_coords, y_coords, noise
+        if self.dimension == "2D":
+            ax.imshow(noise, cmap='terrain')
+        else:
+            ax.plot_surface(x_coords, y_coords, noise, cmap = 'terrain', linewidth = 0)
+""""
 TODO
 
-Make visual area shorter proportional to water level
+Make visual area shorter proportional to water level -> adjust plt axis-ratio
 Make vertical walls not water whenever water level is active
 Make a seed generator (Way to save numpy.random.seed every new gen for export later).
 Make way to re-create maps
